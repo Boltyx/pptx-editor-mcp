@@ -7,6 +7,7 @@ import os
 import argparse
 from typing import Dict, Any
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 
 # import utils  # Currently unused
 from tools import (
@@ -406,8 +407,13 @@ def get_server_info() -> Dict:
 def main(transport: str = "stdio", port: int = 8000):
     if transport == "http":
         import asyncio
-        # Set the port for HTTP transport
+        # Bind to all interfaces so other containers (ngrok) can reach us.
+        app.settings.host = "0.0.0.0"
         app.settings.port = port
+        # Disable the localhost-only host header check — ngrok sends its own domain as Host.
+        app.settings.transport_security = TransportSecuritySettings(
+            enable_dns_rebinding_protection=False
+        )
         # Start the FastMCP server with HTTP transport
         try:
             app.run(transport='streamable-http')

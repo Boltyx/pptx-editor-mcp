@@ -1,0 +1,33 @@
+services:
+  mcp:
+    build: .
+    runtime: runc
+    # Relative file paths from the LLM resolve to /data (the mounted volume).
+    working_dir: /data
+    # /app stays on PYTHONPATH so the server's own modules (tools/, utils/) are found.
+    command: ["-t", "http", "-p", "${MCP_PORT:-8000}"]
+    volumes:
+      # Only this directory is visible inside the container.
+      # Change PPTX_DIR in .env to point at your actual folder.
+      - ${PPTX_DIR:-./pptx-files}:/data:rw
+    ports:
+      # Expose port to host so a reverse proxy (nginx/traefik) can reach it in server mode.
+      - "${MCP_PORT:-8000}:${MCP_PORT:-8000}"
+    environment:
+      - PPT_TEMPLATE_PATH=/data
+      - PYTHONPATH=/app
+    restart: unless-stopped
+
+  ngrok:
+    profiles: [ngrok]
+    image: ngrok/ngrok:latest
+    runtime: runc
+    command: http mcp:${MCP_PORT:-8000} --log stdout
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
+    ports:
+      # ngrok web UI — open http://localhost:4040 to get the public URL.
+      - "4040:4040"
+    depends_on:
+      - mcp
+    restart: unless-stopped
