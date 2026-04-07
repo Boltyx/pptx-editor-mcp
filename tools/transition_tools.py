@@ -1,6 +1,9 @@
 """
 Slide transition management tools for PowerPoint MCP Server.
-Implements slide transition and timing capabilities.
+
+⚠️ DEPRECATED: This tool is a placeholder. Python-pptx does not support slide transitions.
+Setting transitions would require low-level XML manipulation which could corrupt files.
+This tool remains for API compatibility but does not implement actual transition functionality.
 """
 
 from typing import Dict, List, Optional, Any
@@ -12,7 +15,7 @@ def register_transition_tools(app, presentations, get_current_presentation_id, v
     
     @app.tool(
         annotations=ToolAnnotations(
-            title="Manage Slide Transitions",
+            title="Manage Slide Transitions (DEPRECATED - Not Implemented)",
         ),
     )
     def manage_slide_transitions(
@@ -23,17 +26,22 @@ def register_transition_tools(app, presentations, get_current_presentation_id, v
         presentation_id: str = None
     ) -> Dict:
         """
-        Manage slide transitions and timing.
+        ⚠️ DEPRECATED - NOT IMPLEMENTED
+        
+        This tool is a placeholder. Python-pptx library does not support slide transitions.
+        Implementing transitions would require low-level XML manipulation which risks file corruption.
+        
+        This tool remains available for API compatibility but will not apply any transitions.
         
         Args:
             slide_index: Index of the slide (0-based)
             operation: Operation type ("set", "remove", "get")
-            transition_type: Type of transition (basic support)
-            duration: Duration of transition in seconds
+            transition_type: Type of transition (NOT IMPLEMENTED)
+            duration: Duration of transition in seconds (NOT IMPLEMENTED)
             presentation_id: Optional presentation ID (uses current if not provided)
             
         Returns:
-            Dictionary with transition information
+            Dictionary with deprecation notice
         """
         try:
             # Get presentation
@@ -52,25 +60,33 @@ def register_transition_tools(app, presentations, get_current_presentation_id, v
             if operation == "get":
                 # Get current transition info (limited python-pptx support)
                 return {
+                    "warning": "⚠️ DEPRECATED: This tool is not implemented",
                     "message": f"Transition info for slide {slide_index}",
                     "slide_index": slide_index,
-                    "note": "Transition reading has limited support in python-pptx"
+                    "note": "Transition reading has limited support in python-pptx",
+                    "deprecated": True
                 }
             
             elif operation == "set":
                 return {
-                    "message": f"Transition setting requested for slide {slide_index}",
+                    "warning": "⚠️ DEPRECATED: This tool is not implemented - transitions will NOT be applied",
+                    "message": f"Transition setting requested for slide {slide_index} (NOT APPLIED)",
                     "slide_index": slide_index,
                     "transition_type": transition_type,
                     "duration": duration,
-                    "note": "Transition setting has limited support in python-pptx - this is a placeholder for future enhancement"
+                    "note": "Transition setting is NOT IMPLEMENTED in python-pptx. This tool is a placeholder.",
+                    "deprecated": True,
+                    "applied": False
                 }
             
             elif operation == "remove":
                 return {
-                    "message": f"Transition removal requested for slide {slide_index}",
+                    "warning": "⚠️ DEPRECATED: This tool is not implemented - transitions will NOT be removed",
+                    "message": f"Transition removal requested for slide {slide_index} (NOT APPLIED)",
                     "slide_index": slide_index,
-                    "note": "Transition removal has limited support in python-pptx - this is a placeholder for future enhancement"
+                    "note": "Transition removal is NOT IMPLEMENTED in python-pptx. This tool is a placeholder.",
+                    "deprecated": True,
+                    "applied": False
                 }
             
             else:

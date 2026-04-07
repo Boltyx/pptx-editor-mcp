@@ -261,7 +261,8 @@ def open_presentation_wrapper(original_func):
 register_presentation_tools(
     app, 
     presentations, 
-    get_current_presentation_id, 
+    get_current_presentation_id,
+    set_current_presentation_id,
     get_template_search_directories
 )
 

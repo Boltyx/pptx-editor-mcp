@@ -113,7 +113,7 @@ def register_professional_tools(app: FastMCP, presentations: Dict, get_current_p
             
             else:
                 return {
-                    "error": f"Invalid operation: {operation}. Must be 'slide', 'theme', 'enhance', or 'get_schemes'"
+                    "error": f"Invalid operation: {operation}. Must be 'professional_slide', 'theme', 'enhance', or 'get_schemes'"
                 }
         
         except Exception as e:
