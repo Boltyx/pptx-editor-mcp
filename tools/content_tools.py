@@ -58,10 +58,20 @@ def register_content_tools(app: FastMCP, presentations: Dict, get_current_presen
                 ppt_utils.set_slide_gradient_background(
                     slide, background_colors[0], background_colors[1], gradient_direction
                 )
+            elif background_type == "solid" and background_colors and len(background_colors) >= 1:
+                # Solid color = gradient with same start and end color
+                ppt_utils.set_slide_gradient_background(
+                    slide, background_colors[0], background_colors[0], gradient_direction
+                )
             elif background_type == "professional_gradient":
                 ppt_utils.create_professional_gradient_background(
                     slide, color_scheme, "subtle", gradient_direction
                 )
+            elif background_type is not None:
+                # Invalid background_type specified - return error instead of silently ignoring
+                return {
+                    "error": f"Invalid background_type: '{background_type}'. Must be 'solid', 'gradient', or 'professional_gradient'"
+                }
             
             return {
                 "message": f"Added slide {slide_index} with layout {layout_index}",

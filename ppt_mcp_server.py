@@ -399,10 +399,16 @@ def get_server_info() -> Dict:
     """Get information about the MCP server."""
     return {
         "name": "PowerPoint MCP Server - Enhanced Edition",
-        "version": "2.1.0",
+        "version": "2.1.1",
         "total_tools": 32,  # Organized into 11 specialized modules
         "loaded_presentations": len(presentations),
         "current_presentation": current_presentation_id,
+        "workflow_guidance": [
+            "Regularly inspect results using get_slide_info and extract_slide_text",
+            "Verify that desired changes have been applied correctly",
+            "Use layout_index=6 (Blank) for slides without placeholders",
+            "Background colors format: [[R, G, B]] for solid, [[R1,G1,B1], [R2,G2,B2]] for gradient"
+        ],
         "features": [
             "Presentation Management (7 tools)",
             "Content Management (6 tools)", 
