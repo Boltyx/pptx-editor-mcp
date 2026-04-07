@@ -16,6 +16,7 @@ services:
     environment:
       - PPT_TEMPLATE_PATH=/data
       - PYTHONPATH=/app
+      - MCP_AUTH_TOKEN=${MCP_AUTH_TOKEN:-}
     restart: unless-stopped
 
   ngrok:

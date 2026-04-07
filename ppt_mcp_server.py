@@ -4,10 +4,41 @@ MCP Server for PowerPoint manipulation using python-pptx.
 Consolidated version with 20 tools organized into multiple modules.
 """
 import os
+import json
 import argparse
 from typing import Dict, Any
 from mcp.server.fastmcp import FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
+
+
+class BearerTokenMiddleware:
+    """
+    Minimal ASGI middleware that enforces a static bearer token.
+    Only active when MCP_AUTH_TOKEN is set in the environment.
+    """
+
+    def __init__(self, app, token: str):
+        self._app = app
+        self._token = token
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] == "http":
+            headers = {k.lower(): v for k, v in scope.get("headers", [])}
+            auth = headers.get(b"authorization", b"").decode()
+            if auth != f"Bearer {self._token}":
+                body = json.dumps({"error": "unauthorized"}).encode()
+                await send({
+                    "type": "http.response.start",
+                    "status": 401,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode()),
+                        (b"www-authenticate", b'Bearer realm="MCP Server"'),
+                    ],
+                })
+                await send({"type": "http.response.body", "body": body})
+                return
+        await self._app(scope, receive, send)
 
 # import utils  # Currently unused
 from tools import (
@@ -407,22 +438,37 @@ def get_server_info() -> Dict:
 def main(transport: str = "stdio", port: int = 8000):
     if transport == "http":
         import asyncio
-        # Bind to all interfaces so other containers (ngrok) can reach us.
+        import uvicorn
+
         app.settings.host = "0.0.0.0"
         app.settings.port = port
-        # Disable the localhost-only host header check — ngrok sends its own domain as Host.
         app.settings.transport_security = TransportSecuritySettings(
             enable_dns_rebinding_protection=False
         )
-        # Start the FastMCP server with HTTP transport
+
+        starlette_app = app.streamable_http_app()
+
+        auth_token = os.environ.get("MCP_AUTH_TOKEN")
+        asgi_app = BearerTokenMiddleware(starlette_app, auth_token) if auth_token else starlette_app
+
+        if auth_token:
+            print("Bearer token authentication enabled.")
+        else:
+            print("Warning: MCP_AUTH_TOKEN not set — server is unauthenticated.")
+
+        async def serve():
+            config = uvicorn.Config(
+                asgi_app,
+                host=app.settings.host,
+                port=app.settings.port,
+                log_level=app.settings.log_level.lower(),
+            )
+            await uvicorn.Server(config).serve()
+
         try:
-            app.run(transport='streamable-http')
-        except asyncio.exceptions.CancelledError:
-            print("Server stopped by user.")
+            asyncio.run(serve())
         except KeyboardInterrupt:
             print("Server stopped by user.")
-        except Exception as e:
-            print(f"Error starting server: {e}")
             
     elif transport == "sse":
         # Run the FastMCP server in SSE (Server Side Events) mode
